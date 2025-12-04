@@ -4,7 +4,7 @@
   "title": "YAIM0425 d28b Hot or Cold",
   "author": "YAIM0425",
   "factorio_version": "2.0",
-  "description": "Allows you to play the children's game hot and cold in each chunk.. [[I accept suggestions]]",
+  "description": "Allows you to play the children's game hot and cold in each chunk. [[I accept suggestions]]",
   "homepage": "https://github.com/yaim0425/YAIM0425-d28b-hot-or-cold",
   "dependencies": [
     "YAIM0425-d00b-core"
