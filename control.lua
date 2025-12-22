@@ -137,30 +137,30 @@ function This_MOD.create_entity(Data)
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
     --- Variables a usar
-    local Distance = 100
+    local Zone = 3
 
     --- Procesar los regalos
     for _, Space in pairs(Spaces) do
-        if Space.distance and Distance > Space.distance then
-            Distance = Space.distance
+        if Space.zone and Zone > Space.zone then
+            Zone = Space.zone
         end
     end
 
     --- Procesar distancia
     local String
-    if Distance == 0 then
+    if Zone == 0 then
         This_MOD.give_gift(Data)
-    elseif Distance <= 2 then
+    elseif Zone == 1 then
         String = "thermometer-red"
-    elseif Distance <= 5 then
+    elseif Zone == 2 then
         String = "thermometer-blue"
     else
         String = "snowflake"
     end
 
     --- Informar del resultado
-    if String then
-        This_MOD.sound_bad(Data)
+    if Zone > 0 then
+        This_MOD.sound_bad(Data, Zone)
         Data.Player.create_local_flying_text({
             position = Data.Entity.position,
             text = "[img=virtual-signal.signal-" .. String .. "]"
@@ -327,11 +327,17 @@ function This_MOD.validate_chunk(Data, Space)
     --- Calcular la distancia al regalo
     local Dx = math.abs(Space.position.x - Data.position[Space.name].x)
     local Dy = math.abs(Space.position.y - Data.position[Space.name].y)
-    Space.distance = math.max(Dx, Dy)
+    Space.zone = math.max(Dx, Dy)
 
-    --- El regalo fue encontrado
-    if Space.distance == 0 then
+    --- Distancia del regalo
+    if Space.zone == 0 then
         Data.position[Space.name].found = true
+    elseif Space.zone <= 2 then
+        Space.zone = 1
+    elseif Space.zone <= 5 then
+        Space.zone = 2
+    else
+        Space.zone = 3
     end
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
@@ -543,8 +549,9 @@ function This_MOD.sound_good(Data)
     Data.Player.play_sound({ path = "utility/new_objective" })
 end
 
-function This_MOD.sound_bad(Data)
-    Data.Player.play_sound({ path = "utility/axe_mining_stone" })
+function This_MOD.sound_bad(Data, distance)
+    local Sound = { "axe_fighting", "axe_mining_ore", "axe_mining_stone" }
+    Data.Player.play_sound({ path = "utility/" .. Sound[distance] })
 end
 
 ---------------------------------------------------------------------------------------------------
