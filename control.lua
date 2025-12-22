@@ -106,6 +106,7 @@ function This_MOD.create_entity(Data)
 
     if not Data.Entity or not Data.Entity.valid then return end
     if not GMOD.has_id(Data.Entity.name, This_MOD.id) then return end
+    if not This_MOD.gameplay_mode(Data) then return end
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
@@ -137,35 +138,33 @@ function This_MOD.create_entity(Data)
 
     --- Variables a usar
     local Distance = 100
-    local Give = {}
 
     --- Procesar los regalos
     for _, Space in pairs(Spaces) do
         if Space.distance and Distance > Space.distance then
             Distance = Space.distance
-            Give = Space
         end
     end
 
     --- Procesar distancia
-    local String = ""
+    local String
     if Distance == 0 then
-        Give.gift.found = true
         This_MOD.give_gift(Data)
-        String = "[img=virtual-signal.signal-star]"
     elseif Distance <= 2 then
-        String = "[img=virtual-signal.signal-thermometer-red]"
+        String = "thermometer-red"
     elseif Distance <= 5 then
-        String = "[img=virtual-signal.signal-thermometer-blue]"
+        String = "thermometer-blue"
     else
-        String = "[img=virtual-signal.signal-snowflake]"
+        String = "snowflake"
     end
 
     --- Informar del resultado
-    Data.Player.create_local_flying_text {
-        text = String,
-        position = Data.Entity.position
-    }
+    if String then
+        Data.Player.create_local_flying_text({
+            position = Data.Entity.position,
+            text = "[img=virtual-signal.signal-" .. String .. "]"
+        })
+    end
 
     --- Eliminar la entidad
     Data.Entity.destroy()
@@ -328,7 +327,180 @@ function This_MOD.validate_chunk(Data, Space)
     local Dx = math.abs(Space.position.x - Data.position[Space.name].x)
     local Dy = math.abs(Space.position.y - Data.position[Space.name].y)
     Space.distance = math.max(Dx, Dy)
-    Space.gift = Data.position[Space.name]
+
+    --- El regalo fue encontrado
+    if Space.distance == 0 then
+        Data.position[Space.name].found = true
+    end
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+end
+
+---------------------------------------------------------------------------------------------------
+
+function This_MOD.gameplay_mode(Data)
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- Validar el modo del jugador
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    --- Valores a utilizar
+    local Controller = Data.Player.controller_type
+    local isCharacter = Controller == defines.controllers.character
+    local isGod = Controller == defines.controllers.god
+    if not isGod and not isCharacter then return false end
+
+    --- Renombrar las variables
+    local Level = script.level.level_name
+
+    --- Variable a usar
+    local Flag = false
+
+    --- Está en el destino final
+    Flag = Level == "wave-defense"
+    Flag = Flag and Data.Player.surface.index == 1
+    if Flag then return false end
+
+    Flag = Level == "team-production"
+    Flag = Flag and Data.Player.force.index == 1
+    if Flag then return false end
+
+    Flag = Level == "pvp"
+    Flag = Flag and Data.Player.force.index == 1
+    if Flag then return false end
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+
+
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- Modo valido
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    return true
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+end
+
+function This_MOD.get_available_items(player)
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- Variables a usar
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    local Return = {}
+    local added = {}
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+
+
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- Validación
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    local function add(name)
+        if name and not added[name] then
+            added[name] = true
+            table.insert(Return, name)
+        end
+    end
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+
+
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- 1. Recetas desbloqueadas
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    for _, recipe in pairs(player.force.recipes) do
+        if recipe.enabled then
+            for _, product in pairs(recipe.products or {}) do
+                if product.type == "item" then
+                    add(product.name)
+                end
+            end
+        end
+    end
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+
+
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- 2. Recursos naturales (minería)
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    for _, proto in pairs(prototypes.entity) do
+        if proto.type == "resource" and proto.mineable_properties then
+            for _, product in pairs(proto.mineable_properties.products or {}) do
+                if product.type == "item" then
+                    add(product.name)
+                end
+            end
+        end
+    end
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+
+
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- 3. Árboles y rocas
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    for _, proto in pairs(prototypes.entity) do
+        if proto.type == "tree" or proto.type == "simple-entity" then
+            if proto.mineable_properties then
+                for _, product in pairs(proto.mineable_properties.products or {}) do
+                    if product.type == "item" then
+                        add(product.name)
+                    end
+                end
+            end
+        end
+    end
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+
+
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- 4. Peces
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    for _, proto in pairs(prototypes.entity) do
+        if proto.type == "fish" and proto.mineable_properties then
+            for _, product in pairs(proto.mineable_properties.products or {}) do
+                if product.type == "item" then
+                    add(product.name)
+                end
+            end
+        end
+    end
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+
+
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- Devolver el resultado
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    return Return
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end
@@ -336,7 +508,29 @@ end
 function This_MOD.give_gift(Data)
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
+    --- Variables a usar
+    local Items = This_MOD.get_available_items(Data.Player)
+    local Item = {
+        name = Items[math.random(1, #Items)],
+        count = math.random(5, 20)
+    }
 
+    --- El jugador no tiene un cuerpo
+    if not Data.Player.character then
+        Data.Player.insert(Item)
+    end
+
+    --- El jugador tiene un cuerpo
+    if Data.Player.character then
+        local IDInvertory = defines.inventory.character_main
+        Data.Player.character.get_inventory(IDInvertory).insert(Item)
+    end
+
+    --- Informar del premio
+    Data.Player.create_local_flying_text({
+        position = Data.Entity.position,
+        text = "+" .. Item.count .. " [img=item." .. Item.name .. "]"
+    })
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end
