@@ -147,13 +147,11 @@ function This_MOD.create_entity(Data)
         end
     end
 
-    --- Eliminar la entidad
-    Data.Entity.destroy()
-
     --- Procesar distancia
     local String = ""
     if Distance == 0 then
         Give.gift.found = true
+        This_MOD.give_gift(Data)
         String = "[img=virtual-signal.signal-star]"
     elseif Distance <= 2 then
         String = "[img=virtual-signal.signal-thermometer-red]"
@@ -163,13 +161,14 @@ function This_MOD.create_entity(Data)
         String = "[img=virtual-signal.signal-snowflake]"
     end
 
-    --- Hacer visible el resultado
-    for _ = 1, 4, 1 do
-        String = String .. String
-    end
-
     --- Informar del resultado
-    Data.Player.print(String)
+    Data.Player.create_local_flying_text {
+        text = String,
+        position = Data.Entity.position
+    }
+
+    --- Eliminar la entidad
+    Data.Entity.destroy()
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end
@@ -330,6 +329,14 @@ function This_MOD.validate_chunk(Data, Space)
     local Dy = math.abs(Space.position.y - Data.position[Space.name].y)
     Space.distance = math.max(Dx, Dy)
     Space.gift = Data.position[Space.name]
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+end
+
+function This_MOD.give_gift(Data)
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end

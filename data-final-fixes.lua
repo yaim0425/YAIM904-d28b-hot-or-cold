@@ -96,6 +96,7 @@ function This_MOD.create_entity()
     local Table = {}
     Table.type = "simple-entity"
     Table.name = This_MOD.prefix .. This_MOD.name
+    Table.localised_name = { This_MOD.prefix .. This_MOD.name }
     Table.icon = This_MOD.icon
     Table.icon_size = 64
     Table.flags = {}
