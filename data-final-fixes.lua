@@ -116,7 +116,7 @@ function This_MOD.key_sequence()
     Table.type = "custom-input"
     Table.name = This_MOD.prefix .. This_MOD.name
     Table.localised_name = { "description.initial-items" }
-    Table.key_sequence = "CONTROL + P"
+    Table.key_sequence = "R"
     data:extend({ Table })
 end
 
@@ -127,6 +127,7 @@ function This_MOD.tool_button()
     Table.action = "lua"
     Table.icon = This_MOD.icon
     Table.small_icon = This_MOD.icon
+    Table.localised_name = { "description.initial-items" }
     Table.associated_control_input = This_MOD.prefix .. This_MOD.name
     data:extend({ Table })
 end

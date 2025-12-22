@@ -94,41 +94,10 @@ function This_MOD.load_events()
         This_MOD.activate_tool(This_MOD.create_data(event))
     end)
 
-    script.on_event({
-        defines.events.on_chunk_generated
-    }, function(event)
-        This_MOD.create_chunk(This_MOD.create_data(event))
-    end)
-
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end
 
 ---------------------------------------------------------------------------------------------------
-
-function This_MOD.create_chunk(Data)
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-    --- Validar chunk
-    local Surface = Data.Event.surface
-    if Data.position[Surface.index] then return end
-
-    -- --- Validar chunk
-    -- local Surface = Data.Event.surface
-    -- local Chunk = Data.Event.position
-    -- local Key =
-    --     "Surface [Index: " .. Surface.index .. "]" ..
-    --     "Chunk [X: " .. Chunk.x .. "   Y: " .. Chunk.y .. "]"
-    -- if Data.position[Key] then return end
-
-    --- Selecciónar posición
-    local area = Data.Event.area
-    Data.position[Surface.index] = {
-        x = math.floor(math.random(area.left_top.x, area.right_bottom.x)),
-        y = math.floor(math.random(area.left_top.y, area.right_bottom.y))
-    }
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-end
 
 function This_MOD.create_entity(Data)
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
@@ -136,14 +105,7 @@ function This_MOD.create_entity(Data)
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
     if not Data.Entity or not Data.Entity.valid then return end
-    if Data.Entity.name ~= This_MOD.prefix .. This_MOD.name then return end
-
-    local Pos = Data.Entity.position
-    local Gift = Data.position[Data.Entity.surface.index]
-
-    Data.Entity.destroy()
-
-    if not Gift then return end
+    if not GMOD.has_id(Data.Entity.name, This_MOD.id) then return end
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
@@ -152,31 +114,62 @@ function This_MOD.create_entity(Data)
 
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-    --- Calcular distacia al premio
+    --- Buscar el regalo
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
-    local dx = math.abs(Pos.x - Gift.x)
-    local dy = math.abs(Pos.y - Gift.y)
-    local dist = math.max(dx, dy)
+    --- Agrupar la información
+    local Spaces = This_MOD.create_space(Data)
 
-    local state
-    if dist == 0 then
-        state = "🎁 PREMIO"
-    elseif dist <= 2 then
-        state = "🌡 Tibio"
-    elseif dist <= 5 then
-        state = "❄ Frío"
-    else
-        state = "🥶 Muy frío"
+    --- Validar cada chunk
+    for _, Space in pairs(Spaces) do
+        This_MOD.validate_chunk(Data, Space)
     end
 
-    -- DEBUG / TEST OUTPUT
-    Data.Player.print(string.format(
-        "%s | Actual: (%d, %d) | Premio: (%d, %d)",
-        state,
-        math.floor(Pos.x), math.floor(Pos.y),
-        Gift.x, Gift.y
-    ))
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+
+
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- Procesar
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    --- Variables a usar
+    local Distance = 100
+    local Give = {}
+
+    --- Procesar los regalos
+    for _, Space in pairs(Spaces) do
+        if Space.distance and Distance > Space.distance then
+            Distance = Space.distance
+            Give = Space
+        end
+    end
+
+    --- Eliminar la entidad
+    Data.Entity.destroy()
+
+    --- Procesar distancia
+    local String = ""
+    if Distance == 0 then
+        Give.gift.found = true
+        String = "[img=virtual-signal.signal-star]"
+    elseif Distance <= 2 then
+        String = "[img=virtual-signal.signal-thermometer-red]"
+    elseif Distance <= 5 then
+        String = "[img=virtual-signal.signal-thermometer-blue]"
+    else
+        String = "[img=virtual-signal.signal-snowflake]"
+    end
+
+    --- Hacer visible el resultado
+    for _ = 1, 4, 1 do
+        String = String .. String
+    end
+
+    --- Informar del resultado
+    Data.Player.print(String)
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end
@@ -228,12 +221,117 @@ function This_MOD.create_data(event)
 end
 
 function This_MOD.activate_tool(Data)
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- Validación
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
     if not Data.Player or not Data.Player.valid then return end
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+
+
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- Listo para usar
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
     Data.Player.cursor_stack.clear()
     Data.Player.cursor_stack.set_stack {
         name = This_MOD.prefix .. This_MOD.name,
         count = 1
     }
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+end
+
+function This_MOD.create_space(Data)
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- Variables a usar
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    local Position = Data.Entity.position
+    local Spaces = {}
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+
+
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- Información para validar
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    for x = Position.x - 5, Position.x + 5, 1 do
+        for y = Position.y - 5, Position.y + 5, 1 do
+            local Chunk = {
+                x = math.floor(x / 32),
+                y = math.floor(y / 32)
+            }
+
+            local Key =
+                "Surface: " .. Data.Entity.surface.index .. " | " ..
+                "Chunk: { X: " .. Chunk.x .. ", Y: " .. Chunk.y .. " }"
+
+            if not Spaces[Key] then
+                Spaces[Key] = {
+                    left_top = {
+                        x = Chunk.x * 32,
+                        y = Chunk.y * 32
+                    },
+                    right_bottom = {
+                        x = Chunk.x * 32 + 31,
+                        y = Chunk.y * 32 + 31
+                    },
+                    position = {
+                        x = math.floor(Position.x),
+                        y = math.floor(Position.y)
+                    },
+                    chunk = Chunk,
+                    name = Key
+                }
+            end
+        end
+    end
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+
+
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- Devolver el resultado
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    return Spaces
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+end
+
+function This_MOD.validate_chunk(Data, Space)
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    --- Crear el regalo de no existir
+    if not Data.position[Space.name] then
+        Data.position[Space.name] = {
+            x = math.floor(math.random(Space.left_top.x, Space.right_bottom.x)),
+            y = math.floor(math.random(Space.left_top.y, Space.right_bottom.y))
+        }
+    end
+
+    --- Regalo encontrado
+    if Data.position[Space.name].found then return end
+
+    --- Calcular la distancia al regalo
+    local Dx = math.abs(Space.position.x - Data.position[Space.name].x)
+    local Dy = math.abs(Space.position.y - Data.position[Space.name].y)
+    Space.distance = math.max(Dx, Dy)
+    Space.gift = Data.position[Space.name]
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end
 
 ---------------------------------------------------------------------------------------------------
