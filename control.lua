@@ -160,6 +160,7 @@ function This_MOD.create_entity(Data)
 
     --- Informar del resultado
     if String then
+        This_MOD.sound_bad(Data)
         Data.Player.create_local_flying_text({
             position = Data.Entity.position,
             text = "[img=virtual-signal.signal-" .. String .. "]"
@@ -527,12 +528,23 @@ function This_MOD.give_gift(Data)
     end
 
     --- Informar del premio
+    This_MOD.sound_good(Data)
     Data.Player.create_local_flying_text({
         position = Data.Entity.position,
         text = "+" .. Item.count .. " [img=item." .. Item.name .. "]"
     })
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+end
+
+---------------------------------------------------------------------------------------------------
+
+function This_MOD.sound_good(Data)
+    Data.Player.play_sound({ path = "utility/new_objective" })
+end
+
+function This_MOD.sound_bad(Data)
+    Data.Player.play_sound({ path = "utility/axe_mining_stone" })
 end
 
 ---------------------------------------------------------------------------------------------------

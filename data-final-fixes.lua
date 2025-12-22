@@ -67,6 +67,9 @@ function This_MOD.reference_values()
     --- Imagen a usar
     This_MOD.icon = "__base__/graphics/icons/signal/signal-mining.png"
 
+    --- Rutas de los recursos
+    This_MOD.path_sound = "__" .. This_MOD.prefix .. This_MOD.name .. "__/sound/"
+
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end
 
@@ -100,6 +103,7 @@ function This_MOD.create_entity()
     Table.icon = This_MOD.icon
     Table.icon_size = 64
     Table.flags = {}
+    Table.build_sound = { filename = This_MOD.path_sound .. "empty_audio.ogg" }
     Table.collision_box = { { -0.4, -0.4 }, { 0.4, 0.4 } }
     Table.selection_box = { { -0.5, -0.5 }, { 0.5, 0.5 } }
     Table.selectable_in_game = false
