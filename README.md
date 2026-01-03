@@ -1,5 +1,7 @@
 # YAIM904 d28b – Hot or Cold 🎁🔥❄️
 
+---
+
 ## 📦 Description
 
 **YAIM904 d28b – Hot or Cold** turns Factorio into a **treasure-hunting mini-game**, inspired by the classic children’s game *hot and cold*.
@@ -59,7 +61,7 @@ No setup or configuration is required.
 
 ## ❤️ Support
 
-Suggestions, ideas, and balance feedback are welcome on the GitHub repository.
+Suggestions, ideas and balance feedback are welcome on the GitHub repository.
 
 ---
 
