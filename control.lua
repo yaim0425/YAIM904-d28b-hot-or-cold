@@ -106,7 +106,10 @@ function This_MOD.create_entity(Data)
 
     if not Data.Entity or not Data.Entity.valid then return end
     if not GMOD.has_id(Data.Entity.name, This_MOD.id) then return end
-    if not This_MOD.gameplay_mode(Data) then return end
+    if not This_MOD.gameplay_mode(Data) then
+        Data.Entity.destroy()
+        return
+    end
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
