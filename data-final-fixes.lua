@@ -121,7 +121,7 @@ function This_MOD.key_sequence()
     Table.type = "custom-input"
     Table.name = This_MOD.prefix .. This_MOD.name
     Table.localised_name = { This_MOD.prefix .. This_MOD.name }
-    Table.key_sequence = "R"
+    Table.key_sequence = "Ctrl + R"
     data:extend({ Table })
 end
 
