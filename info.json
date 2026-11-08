@@ -1,11 +1,11 @@
 {
-    "name":  "YAIM904-d28b-hot-or-cold",
-    "version":  "1.0.0",
-    "title":  "YAIM904 d28b Hot or Cold",
-    "author":  "YAIM904",
-    "factorio_version":  "2.0",
-    "description":  "Allows you to play the children\u0027s game hot and cold in each chunk. [[I accept suggestions]]",
-    "homepage":  "https://github.com/yaim0425/YAIM904-d28b-hot-or-cold",
+    "name": "YAIM904-d28b-hot-or-cold",
+    "version": "1.0.0",
+    "title": "YAIM904 d28b Hot or Cold",
+    "author": "YAIM904",
+    "factorio_version": "2.0",
+    "description": "Allows you to play the children\u0027s game hot and cold in each chunk. [[I accept suggestions]]",
+    "homepage": "https://github.com/yaim0425/YAIM904-d28b-hot-or-cold",
     "dependencies":  [
         "YAIM904-d00b-core >= 1.0.0"
     ]
